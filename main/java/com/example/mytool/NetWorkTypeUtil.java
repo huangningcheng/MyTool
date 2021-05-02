@@ -3,7 +3,6 @@ package com.example.mytool;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
