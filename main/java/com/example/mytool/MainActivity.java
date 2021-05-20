@@ -29,7 +29,6 @@ import static com.example.mytool.NetWorkTypeUtil.getDnsFromConnectionManager;
 import static com.example.mytool.NetWorkTypeUtil.get_cell_info;
 import static com.example.mytool.NetWorkTypeUtil.get_network_info;
 
-
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "MyTool";
     public class NetInfoAdapter extends ArrayAdapter<String[]>{
