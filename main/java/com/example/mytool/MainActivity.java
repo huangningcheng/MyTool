@@ -8,7 +8,11 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.telephony.PhoneStateListener;
+import android.telephony.SignalStrength;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
             Log.i(MainActivity.TAG,"2未授权");
             ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
         }
+        TelephonyManager manager = (TelephonyManager) this
+                .getSystemService(TELEPHONY_SERVICE);
+
+        manager.listen(new SignalStrengthListener(),
+                PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -101,5 +111,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+    }
+    private class SignalStrengthListener extends PhoneStateListener {
+        public void onSignalStrengthsChanged(SignalStrength signalStrength) {
+            super.onSignalStrengthsChanged(signalStrength);
+            int lte_sinr;
+            int lte_rsrp;
+            int lte_rsrq;
+            int lte_rssnr;
+            int lte_cqi;
+            try {
+                /*lte_sinr = (Integer) signalStrength.getClass().getMethod("getLteSignalStrength").invoke(signalStrength);
+                lte_rsrp = (Integer) signalStrength.getClass().getMethod("getLteRsrp").invoke(signalStrength);
+                lte_rsrq = (Integer) signalStrength.getClass().getMethod("getLteRsrq").invoke(signalStrength);
+                lte_rssnr = (Integer) signalStrength.getClass().getMethod("getLteRssnr").invoke(signalStrength);
+                lte_cqi = (Integer) signalStrength.getClass().getMethod("getLteCqi").invoke(signalStrength);*/
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    Log.d(TAG, "lte_rsrp:" + signalStrength.getCellSignalStrengths().get(0).getDbm());
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.d(TAG, "error:"+e.toString());
+                return;
+            }
+        }
     }
 }

@@ -315,7 +315,7 @@ public class NetWorkTypeUtil {
                                 dnsinfo[1] = addr.getHostAddress();
                                 dnsv6Servers.add(dnsinfo);
                             }
-                            Log.i(MainActivity.TAG,addr.getHostAddress());
+                            //Log.i(MainActivity.TAG,addr.getHostAddress());
                         }
                     }
                 }
