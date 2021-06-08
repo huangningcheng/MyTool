@@ -22,6 +22,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
@@ -30,6 +31,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -44,16 +46,22 @@ public class NetWorkTypeUtil {
     
     public static String[] get_internet_address() {
         String url = "https://2021.ip138.com/";
+        //String url = "https://www.google.com/";
         try {
-            Document doc = (Document) Jsoup.connect(url).header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36").get();
+            Document doc = (Document) Jsoup.connect(url).timeout(3000).header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36").get();
             Element element = doc.getElementsByTag("p").first();
             String[] rs = element.text().split("\\s+|：");
             rs[1] = rs[1].substring(1, rs[1].length() - 1);
+            //Log.d(MainActivity.TAG,""+rs[0]);
             return rs;
         } catch (Exception e) {
             e.printStackTrace();
+            String[] rs =new String[2];
+            rs[0] = "timeout";
+            rs[1] = "cmnet网络超时";
+            //Log.d(MainActivity.TAG,""+rs[0]);
+            return rs;
         }
-        return null;
     }
 
     public static String get_upf_info(InetAddress inetAddress) {
@@ -165,18 +173,25 @@ public class NetWorkTypeUtil {
             e.printStackTrace();
         }
         String [] internet_info = get_internet_address();
-        info = new String[2];
-        info[0] = "PUB_IP";
-        info[1] = internet_info[1];
-        net_data.add(info);
-        info = new String[2];
-        info[0] = "区域";
-        info[1] = internet_info[3];
-        net_data.add(info);
-        info = new String[2];
-        info[0] = "运营商";
-        info[1] = internet_info[4];
-        net_data.add(info);
+        if (internet_info[0].equals("timeout")){
+            info = new String[2];
+            info[0] = "PUB_IP";
+            info[1] = internet_info[1];
+            net_data.add(info);
+        }else{
+            info = new String[2];
+            info[0] = "PUB_IP";
+            info[1] = internet_info[1];
+            net_data.add(info);
+            info = new String[2];
+            info[0] = "区域";
+            info[1] = internet_info[3];
+            net_data.add(info);
+            info = new String[2];
+            info[0] = "运营商";
+            info[1] = internet_info[4];
+            net_data.add(info);
+        }
         return net_data;
     }
 
@@ -185,16 +200,20 @@ public class NetWorkTypeUtil {
         ArrayList<String[]> cellsinfo = new ArrayList<String[]>();
         TelephonyManager telephonymanager = (TelephonyManager) context.getSystemService(TELEPHONY_SERVICE);
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //Log.d(MainActivity.TAG,"do not have permission");
             return null;
         }
         List<CellInfo> cellInfoList = telephonymanager.getAllCellInfo();
+        //Log.d(MainActivity.TAG,""+cellInfoList.size());
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-           return null;
+            //Log.d(MainActivity.TAG,"do not have permission");
+            return null;
         }
         CellLocation location = telephonymanager.getCellLocation();
         for(CellInfo cellInfo:cellInfoList){
-
+            //Log.d(MainActivity.TAG,"get  cells");
             if (cellInfo.isRegistered()) {
+                //Log.d(MainActivity.TAG,cellInfo.toString());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     if (cellInfo instanceof CellInfoNr) {
                         String[] cli = new String[2];
@@ -238,7 +257,7 @@ public class NetWorkTypeUtil {
                     cli = new String[2];
                     cli[0] = "信号强度";
                     ciinfo =((CellInfoLte) cellInfo).getCellSignalStrength().toString();
-                    //Log.i(MainActivity.TAG,ciinfo);
+                    Log.i(MainActivity.TAG,ciinfo);
                     pattern = Pattern.compile("rsrp=-\\d+|rsrq=-\\d+|rssi=-\\d+");
                     matcher = pattern.matcher(ciinfo);
                     citmp = "";
